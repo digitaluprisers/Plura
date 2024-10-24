@@ -26,26 +26,12 @@ import { revalidatePath } from 'next/cache'
 export const getAuthUserDetails = async () => {
   const user = await currentUser()
   if (!user) {
-    return
+    return null
   }
 
   const userData = await db.user.findUnique({
-    where: {
-      email: user.emailAddresses[0].emailAddress,
-    },
-    include: {
-      Agency: {
-        include: {
-          SidebarOption: true,
-          SubAccount: {
-            include: {
-              SidebarOption: true,
-            },
-          },
-        },
-      },
-      Permissions: true,
-    },
+    where: { id: user.id },
+    include: { Agency: true }, // Include the Agency relation
   })
 
   return userData
@@ -886,14 +872,23 @@ export const getFunnelPageDetails = async (funnelPageId: string) => {
 }
 
 export const getDomainContent = async (subDomainName: string) => {
-  const response = await db.funnel.findUnique({
-    where: {
-      subDomainName,
-    },
-    include: { FunnelPages: true },
-  })
-  return response
-}
+  const subdomain = subDomainName.split(':')[0];
+  try {
+    const response = await db.funnel.findUnique({
+      where: {
+        subDomainName: subdomain,
+      },
+      include: {
+        funnelPages: true, // Changed from FunnelPages to funnelPages
+        SubAccount: true,
+        classNames: true,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const getPipelines = async (subaccountId: string) => {
   const response = await db.pipeline.findMany({
@@ -906,3 +901,4 @@ export const getPipelines = async (subaccountId: string) => {
   })
   return response
 }
+

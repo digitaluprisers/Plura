@@ -19,7 +19,7 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { getAuthUserDetails } from '@/lib/queries'
-import { SubAccount } from '@prisma/client'
+import { SubAccount, User } from '@prisma/client'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -32,8 +32,8 @@ type Props = {
 }
 
 const AllSubaccountsPage = async ({ params }: Props) => {
-  const user = await getAuthUserDetails()
-  if (!user) return
+  const user = await getAuthUserDetails() as (User & { Agency: Agency | null }) | null;
+  if (!user) return null;
 
   return (
     <AlertDialog>
